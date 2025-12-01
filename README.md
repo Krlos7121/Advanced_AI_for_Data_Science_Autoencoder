@@ -25,5 +25,5 @@ Descarga el dataset de Kaggle: https://www.kaggle.com/datasets/theblackmamba31/l
 - Crea dos nuevas carpetas en la raíz del directorio en el que estás trabajando, con los nombres **gray_test** y **color_test**, una vez creadas, define el número de imagenes que quieres tomar para tus queries, y seleccionalas por el número más alto al más bajo en el nombre.
   Por ejemplo, si quieres 27 imagenes para probar, tomarías desde la imagen 7128 hasta la 7000, que serán reubicadas a las carpetas de test para **gray** y **color**, respectivamente.
   Con esto, el modelo no será entrenado con esas imagenes.
-- Corre **modelo.ipynb** para crear el modelo.
+- Corre **modelo.ipynb** o **modelo_sstm.ipynb** para crear el modelo de tu interés.
 - Corre **gui_queries.py** para ver las predicciones del modelo.
