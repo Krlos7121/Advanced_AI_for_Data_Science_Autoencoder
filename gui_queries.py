@@ -5,21 +5,15 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
-# Función de pérdida que captura similitud estructural, requerida para correr el modelo
+# Variable global para el modelo
+model = None
 
 
 def ssim_loss(y_true, y_pred):
     return 1 - tf.reduce_mean(tf.image.ssim(y_true, y_pred, max_val=1.0))
 
 
-# Cargar modelo preentrenado
-model = tf.keras.models.load_model(
-    'best_autoencoder_model.keras', custom_objects={'ssim_loss': ssim_loss})
-
-# Dimensiones de la imagen
 IMAGE_SIZE = (64, 64)
-
-# Función para cargar y preprocesar imagen (asegurarse de que cualquier input sea 64x64)
 
 
 def load_and_preprocess_image(path, channels=1):
@@ -36,10 +30,9 @@ def load_and_preprocess_image(path, channels=1):
         rescaled_img, tf.float32)  # Normalización [0,1]
     return img_tensor_flt.numpy()
 
-# Generar plot de predicciones
-
 
 def predict_and_show(gray_img, color_img=None):
+    global model
     pred = model.predict(np.expand_dims(gray_img, axis=0))[0]
     fig, axs = plt.subplots(
         1, 3 if color_img is not None else 2, figsize=(13, 4))
@@ -76,13 +69,31 @@ class App:
         self.color_img = None
         self.gray_path = None
         self.color_path = None
+        self.model_path = None
 
+        tk.Button(root, text='Seleccionar modelo (.keras)',
+                  command=self.select_model).pack(pady=5)
         tk.Button(root, text='Cargar imagen B/N',
                   command=self.load_gray).pack(pady=5)
         tk.Button(root, text='Cargar imagen color (opcional)',
                   command=self.load_color).pack(pady=5)
         tk.Button(root, text='Predecir y mostrar',
                   command=self.predict).pack(pady=10)
+
+    def select_model(self):
+        global model
+        path = filedialog.askopenfilename(
+            filetypes=[('Keras Model', '*.keras')])
+        if path:
+            try:
+                model = tf.keras.models.load_model(
+                    path, custom_objects={'ssim_loss': ssim_loss})
+                self.model_path = path
+                messagebox.showinfo(
+                    'Modelo cargado', f'Modelo cargado correctamente:\n{path}')
+            except Exception as e:
+                messagebox.showerror(
+                    'Error', f'No se pudo cargar el modelo:\n{e}')
 
     def load_gray(self):
         path = filedialog.askopenfilename(
@@ -103,6 +114,11 @@ class App:
                 'Imagen cargada', 'Imagen color cargada correctamente.')
 
     def predict(self):
+        global model
+        if model is None:
+            messagebox.showerror(
+                'Error', 'Primero selecciona un modelo .keras.')
+            return
         if self.gray_img is None:
             messagebox.showerror(
                 'Error', 'Primero carga una imagen en blanco y negro.')
